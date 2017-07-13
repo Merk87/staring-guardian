@@ -9,6 +9,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 class DefaultController extends Controller
 {
     /**
+     * Function to retrieve all the defined projects specified in the
+     * parameters.yml or directly get all of them.
      * @Route("/")
      * @Template()
      */
@@ -20,10 +22,10 @@ class DefaultController extends Controller
 
         if(!empty($projectTypes)) {
             foreach($projectTypes as $projectKey => $projectType) {
-                $jenkinsJobs[$projectKey] = $this->arrangeJobs($this->getProjects($projectType));
+                $jenkinsJobs[$projectKey] = $this->getLastBuildInformation($this->getProjects($projectType));
             }
         }else{
-            $jenkinsJobs['all'] = $this->arrangeJobs($this->getProjects());
+            $jenkinsJobs['all'] = $this->getLastBuildInformation($this->getProjects());
         }
 
         return array(
@@ -31,6 +33,11 @@ class DefaultController extends Controller
         );
     }
 
+    /**
+     * Function to compose the base url for the Jenkins' JSON API based in
+     * the information supplied in the parameters.yml
+     * @return string
+     */
     private function generateBaseUrl() : string
     {
         return $this->getParameter('api_schema')
@@ -42,7 +49,11 @@ class DefaultController extends Controller
     }
 
     /**
-     * Function to retrieve projects the live projects
+     * Function to retrieve projects based in the project type defined
+     * in the parameters.yml
+     *
+     * @param string|null $projectType
+     *
      * @return array
      */
     private function getProjects(string $projectType = null) : array
@@ -60,29 +71,28 @@ class DefaultController extends Controller
         return $liveProjectsArr['jobs'];
     }
 
-    private function arrangeJobs($liveProjects) : array
+    /**
+     * Function to add to the current array of project all the information
+     * related to the last build.
+     * @param $liveProjects
+     *
+     * @return array
+     */
+    private function getLastBuildInformation(array $liveProjects) : array
     {
+        // We iterate over the array passing the item by reference to being
+        // able to maniputale it.
         array_walk($liveProjects, function(&$item) {
 
-            $item['lastBuildInfo'] = $this->getLastBuildInfo($item);
+            $curler = $this->get('curler');
+            $urlToCurl = $this->generateBaseUrl().'job/'.$item['name'].'/lastBuild/api/json';
 
+            $lastBuildInfoResult = $curler->curlAUrl($urlToCurl);
+            // We add a new key to store all the build information
+            $item['lastBuildInfo'] = json_decode($lastBuildInfoResult['body'], true);
         });
 
         return $liveProjects;
     }
 
-    /**
-     * @param $item
-     * @return array
-     */
-    private function getLastBuildInfo($item)
-    {
-        $curler = $this->get('curler');
-        $urlToCurl = $this->generateBaseUrl().'job/'.$item['name'].'/lastBuild/api/json';
-        $lastBuildInfoResult = $curler->curlAUrl($urlToCurl);
-        $lastBuildInfoArr = json_decode($lastBuildInfoResult['body'], true);
-
-        $changeSet = $lastBuildInfoArr;
-        return $changeSet;
-    }
 }
