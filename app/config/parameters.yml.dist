@@ -17,3 +17,12 @@ parameters:
 
     # A secret key that's used to generate certain security-related tokens
     secret: ThisTokenIsNotSoSecretChangeIt
+
+    api_user:
+    api_token:
+    api_domain:
+    api_schema:
+    # Create associative array to get projects based in categories. Can be empty
+    api_type_projects:
+            liveSites: 'Live Sites'
+            siteBuildSites: 'SiteBuild Sites'

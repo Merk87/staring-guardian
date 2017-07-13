@@ -1,0 +1,3 @@
+services:
+    curler:
+        class: BrokenPixel\CurlerBundle\Controller\CurlerController

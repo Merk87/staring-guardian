@@ -3,3 +3,6 @@ merk_corp_jenkins_monitor:
     type:     annotation
     prefix:   /
 
+curler:
+    resource: "@CurlerBundle/Resources/config/routing.yml"
+    prefix:   /

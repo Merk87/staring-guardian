@@ -1,1 +1,48 @@
-Hello World!
+{% extends '::base.html.twig' %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+
+                <h1>Site Builds Status</h1>
+                <hr/>
+                <table class="table table-bordered table-responsive">
+                    <thead>
+                    <tr>
+                        <td>Site Name</td>
+                        <td>Author</td>
+                        <td>Status</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for job_type in jenkins_jobs %}
+                        {% for job in job_type if job.color != 'notbuilt' %}
+                            {% set changeSetItem = job.lastBuildInfo.changeSet.items|first %}
+                            <tr class="
+                                {% if job.color == 'blue' %}success
+                                {% elseif job.color == 'yellow' %}
+                                warning
+                                {% else %}
+                                danger
+                                {% endif %}
+                            ">
+
+                                <td>{{ job.name }}</td>
+                                {% if changeSetItem != false %}
+                                    <td>{{ changeSetItem.author.fullName }}</td>
+                                {% else %}
+                                    <td>--</td>
+                                {% endif %}
+                                <td>{{ job.lastBuildInfo.result }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

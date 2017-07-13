@@ -1,0 +1,3 @@
+#curler_homepage:
+#    path:     /hello/{name}
+#    defaults: { _controller: CurlerBundle:Default:index }
