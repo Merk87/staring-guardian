@@ -1,4 +1,4 @@
-Staring-Guardian - Another MerkCorp App.
+The Watchkeeper - Another MerkCorp App.
 ======================
 
 Contributors
