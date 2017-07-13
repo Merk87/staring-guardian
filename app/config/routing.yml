@@ -1,0 +1,5 @@
+merk_corp_jenkins_monitor:
+    resource: "@MerkCorpJenkinsMonitorBundle/Controller/"
+    type:     annotation
+    prefix:   /
+

@@ -1,0 +1,4 @@
+services:
+#    merk_corp_jenkins_monitor.example:
+#        class: MerkCorp\JenkinsMonitorBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
