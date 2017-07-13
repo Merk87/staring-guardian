@@ -24,7 +24,7 @@ version will fix that :)
 
 Thanks
 ======================
-Thanks to BrokenPixel (John James) to let me use the CurlBundle.
+Thanks to [http://www.brokenpixel.uk (John James)](http://www.brokenpixel.uk) to let me use the CurlBundle.
  
 TODOs
 ======================
