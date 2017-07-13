@@ -67,6 +67,7 @@ class DefaultController extends Controller
         }
 
         $liveProjectsResult = $curler->curlAUrl($urlToCurl);
+
         $liveProjectsArr = json_decode($liveProjectsResult['body'], true);
         return $liveProjectsArr['jobs'];
     }
@@ -81,7 +82,7 @@ class DefaultController extends Controller
     private function getLastBuildInformation(array $liveProjects) : array
     {
         // We iterate over the array passing the item by reference to being
-        // able to maniputale it.
+        // able to manipulate it.
         array_walk($liveProjects, function(&$item) {
 
             $curler = $this->get('curler');
