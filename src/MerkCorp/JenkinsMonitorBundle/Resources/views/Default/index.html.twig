@@ -47,6 +47,8 @@
                                             data-target="#{{ job.name|replace({'.': '-'}) }}"
                                             data-parent=".project-row"
                                             class="project-row {{ statusClass }}">
+                                            <td style="width: 5%">
+                                                <i class="glyphicon glyphicon-triangle-bottom"></i>
                                             <td>{{ job.name }}</td>
                                             <td>
                                                 {% if job.color == 'blue' %}
@@ -82,14 +84,21 @@
         var rows = $('.project-row');
 
 
+
+
         rows.click(function () {
+
 
             var projectName = $(this).attr('id');
             var panelId = '#' + $(this).attr('id').replace(/\./g, '-');
-            var clickedPanel = $(panelId+ ' td');
-            console.log(clickedPanel);
+            var clickedPanel = $(panelId);
+            var clickedPanelTd = $(panelId+ ' td');
+            var icon = $(this).find("i");
+            icon.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-top');
+
             var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo'}) }}";
             url = url.replace('foo', projectName);
+
 
             $(document).ready(function () {
                 $.ajax({
@@ -97,10 +106,9 @@
                     url: url,
                     contentType: "application/json; charset=utf-8",
                     success: function (response) {
-                        console.log(response);
-                        clickedPanel.empty();
+                        clickedPanelTd.empty();
                         var changeSet = response.changeSet.items[0];
-                        clickedPanel.html(
+                        clickedPanelTd.html(
                            "<table class='table table-bordered'><tbody>" +
                                "<tr>" +
                                    "<td><b>Author</b></td>"+
