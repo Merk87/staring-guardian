@@ -8,41 +8,143 @@
 
                 <h1>Site Builds Status</h1>
                 <hr/>
-                <table class="table table-bordered table-responsive">
-                    <thead>
-                    <tr>
-                        <td>Site Name</td>
-                        <td>Author</td>
-                        <td>Status</td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for job_type in jenkins_jobs %}
-                        {% for job in job_type if job.color != 'notbuilt' %}
-                            {% set changeSetItem = job.lastBuildInfo.changeSet.items|first %}
-                            <tr class="
-                                {% if job.color == 'blue' %}success
-                                {% elseif job.color == 'yellow' %}
-                                warning
-                                {% else %}
-                                danger
-                                {% endif %}
-                            ">
 
-                                <td>{{ job.name }}</td>
-                                {% if changeSetItem != false %}
-                                    <td>{{ changeSetItem.author.fullName }}</td>
-                                {% else %}
-                                    <td>--</td>
-                                {% endif %}
-                                <td>{{ job.lastBuildInfo.result }}</td>
-                            </tr>
+                <div>
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs" role="tablist">
+                        {% for job_type_key, job_type in jenkins_jobs %}
+                            <li role="presentation" {% if loop.first %} class="active"{% endif %}><a
+                                        href="#{{ job_type_key }}"
+                                        aria-controls="{{ job_type_key }}" role="tab"
+                                        data-toggle="tab">{{ job_type_key|unCamelCase|capitalize }}</a>
+                            </li>
                         {% endfor %}
-                    {% endfor %}
-                    </tbody>
-                </table>
+                    </ul>
+
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                        {% for job_type_key, job_type in jenkins_jobs %}
+                            <div role="tabpanel" class="tab-pane {% if loop.first %}active{% endif %}"
+                                 id="{{ job_type_key }}">
+                                <table class="table table-bordered table-responsive">
+                                    <thead>
+                                    <tr>
+                                        <td>Site Name</td>
+                                        <td>Status</td>
+                                        <td></td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for job in job_type if job.color != 'notbuilt' %}
+                                        {% set statusClass = 'success' %}
+
+                                        {% if job.color == 'yellow' %}
+                                            {% set statusClass = 'warning' %}
+                                        {% elseif job.color == 'red' %}
+                                            {% set statusClass = 'danger' %}
+                                        {% endif %}
+                                        <tr data-toggle="collapse" id="{{ job.name }}"
+                                            data-target="#{{ job.name|replace({'.': '-'}) }}"
+                                            data-parent=".project-row"
+                                            class="project-row {{ statusClass }}">
+                                            <td>{{ job.name }}</td>
+                                            <td>
+                                                {% if job.color == 'blue' %}
+                                                    SUCCESS
+                                                {% elseif job.color == 'yellow' %}
+                                                    WARNING
+                                                {% else %}
+                                                    FAILED
+                                                {% endif %}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <tr class="collapse" id="{{ job.name|replace({'.': '-'}) }}">
+                                            <td colspan="3">
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+{% endblock %}
+
+{% block extrajavascritps %}
+    <script type="text/javascript">
+
+        var rows = $('.project-row');
+
+
+        rows.click(function () {
+
+            var projectName = $(this).attr('id');
+            var panelId = '#' + $(this).attr('id').replace(/\./g, '-');
+            var clickedPanel = $(panelId+ ' td');
+            console.log(clickedPanel);
+            var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo'}) }}";
+            url = url.replace('foo', projectName);
+
+            $(document).ready(function () {
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response) {
+                        console.log(response);
+                        clickedPanel.empty();
+                        var changeSet = response.changeSet.items[0];
+                        clickedPanel.html(
+                           "<table class='table table-bordered'><tbody>" +
+                               "<tr>" +
+                                   "<td><b>Author</b></td>"+
+                                   "<td>"+changeSet.author.fullName+"</td>"+
+                               "</tr>" +
+                               "<tr>" +
+                                    "<td><b>Date</b></td>"+
+                                    "<td>"+changeSet.date+"</td>"+
+                               "</tr>" +
+                               "<tr>" +
+                                    "<td><b>Commit Id</b></td>"+
+                                    "<td>"+changeSet.commitId+"</td>"+
+                               "</tr>" +
+                               "<tr>" +
+                                    "<td><b>Comment</b></td>"+
+                                    "<td>"+changeSet.comment+"</td>"+
+                               "</tr>" +
+
+
+                           "</tbody></table>"
+                        );
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+
+            });
+
+        });
+
+
+
+    </script>
+    {# Adding change set.
+    "<tr>" +
+                                   "<td><b>Affected Files</b></td>"+
+                                   "<td>" +
+                                        $.each(changeSet.affectedPaths, function (key, val) {
+                                            "<table class='table table-bordered'>" +
+                                            ("<tr><td>" + val + "</td></tr>") +
+                                            "</table>"
+                                        }) +
+                                   "</td>"+
+                               "</tr>" +
+    #}
 {% endblock %}

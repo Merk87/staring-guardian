@@ -2,16 +2,19 @@
 
 namespace MerkCorp\JenkinsMonitorBundle\Controller;
 
+use Doctrine\ORM\Query\AST\Join;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class DefaultController extends Controller
 {
     /**
      * Function to retrieve all the defined projects specified in the
      * parameters.yml or directly get all of them.
-     * @Route("/")
+     * @Route("/", name="wk_index")
      * @Template()
      */
     public function indexAction() : array
@@ -22,7 +25,7 @@ class DefaultController extends Controller
 
         if(!empty($projectTypes)) {
             foreach($projectTypes as $projectKey => $projectType) {
-                $jenkinsJobs[$projectKey] = $this->getLastBuildInformation($this->getProjects($projectType));
+                $jenkinsJobs[$projectKey] = $this->getProjects($projectType);
             }
         }else{
             $jenkinsJobs['all'] = $this->getLastBuildInformation($this->getProjects());
@@ -32,6 +35,25 @@ class DefaultController extends Controller
             'jenkins_jobs' => $jenkinsJobs
         );
     }
+
+    /**
+     * @Route("/{projectName}/get/information", name="wk_ajax_project_status")
+     * @Method({"GET"})
+     * @param string $projectName
+     * @return JsonResponse
+     */
+    public function projectExtendedInformationAction(string $projectName)
+    {
+
+        $curler = $this->get('curler');
+        $urlToCurl = $this->generateBaseUrl().'job/'.$projectName.'/lastBuild/api/json';
+
+        $lastBuildInfoResult = $curler->curlAUrl($urlToCurl);
+        // We add a new key to store all the build information
+        $result = json_decode($lastBuildInfoResult['body'], true);
+        return new JsonResponse($result);
+    }
+
 
     /**
      * Function to compose the base url for the Jenkins' JSON API based in
