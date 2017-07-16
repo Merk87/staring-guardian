@@ -29,13 +29,13 @@
                         {% for job_type_key, job_type in jenkins_jobs %}
                             <div role="tabpanel" class="tab-pane {% if loop.first %}active{% endif %}"
                                  id="{{ job_type_key }}">
-                                <table class="table table-bordered table-responsive">
+                                <table id=="{{ job_type }}_table" class="table table-bordered table-responsive table-jobs">
                                     <thead>
                                     <tr>
-                                        <td></td>
-                                        <td>Site Name</td>
-                                        <td>Status</td>
-                                        <td>Actions</td>
+                                        <th></th>
+                                        <th>Site Name</th>
+                                        <th>Status</th>
+                                        <t>Actions</t>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -128,6 +128,7 @@
             var buildModal = $('#buildModal');
             var alertContainer = $('.alert-container');
             var curl_alert = $('.curl-alert');
+
             curl_alert.hide();
 
             rows.click(function () {
