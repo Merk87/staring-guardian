@@ -1,0 +1,16 @@
+{% extends '::base.html.twig' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 text-center">
+
+            <h1>Something went wrong...</h1>
+            <hr/>
+            <p>Looks like some of the request to the server Jenkins has failed.</p>
+            <p>Please try again later, and if the error persists, contact your sysadministrator</p>
+            <p>The error code returned from Jenkins was: <b>{{ error }}</b></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
