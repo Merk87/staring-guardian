@@ -29,7 +29,7 @@
                         {% for job_type_key, job_type in jenkins_jobs %}
                             <div role="tabpanel" class="tab-pane {% if loop.first %}active{% endif %}"
                                  id="{{ job_type_key }}">
-                                <table id=="{{ job_type }}_table" class="table table-bordered table-responsive table-jobs">
+                                <table id=="{{ job_type_key }}_table" class="table table-bordered table-responsive table-jobs">
                                     <thead>
                                     <tr>
                                         <th></th>
