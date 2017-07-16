@@ -80,6 +80,12 @@ class DefaultController extends Controller
         }
 
         $lastBuildInfoResult = $curler->curlAUrl($urlToCurl);
+        $checkCurl = $this->manageCurlHttpResponseCodes($lastBuildInfoResult['curlInfo']);
+
+        if($checkCurl['error'] === true){
+            return new JsonResponse("Something was terribly bad...", $checkCurl['http_code']);
+        }
+
         // We add a new key to store all the build information
         $result = json_decode($lastBuildInfoResult['body'], true);
         return new JsonResponse($result);
@@ -96,7 +102,14 @@ class DefaultController extends Controller
         $curler = $this->get('curler');
         $urlToCurl = $this->generateBaseUrl() . 'job/' . $projectName . '/build';
 
-        $curler->curlAUrl($urlToCurl);
+        $buildActionResult = $curler->curlAUrl($urlToCurl);
+
+        $checkCurl = $this->manageCurlHttpResponseCodes($buildActionResult['curlInfo']);
+
+        if($checkCurl['error'] === true){
+            return new JsonResponse("Something was terribly bad...", $checkCurl['http_code']);
+        }
+
         return new JsonResponse("Build triggered...");
     }
 
