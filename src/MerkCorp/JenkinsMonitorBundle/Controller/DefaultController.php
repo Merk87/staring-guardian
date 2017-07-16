@@ -28,7 +28,7 @@ class DefaultController extends Controller
                 $jenkinsJobs[$projectKey] = $this->getProjects($projectType);
             }
         }else{
-            $jenkinsJobs['all'] = $this->getLastBuildInformation($this->getProjects());
+            $jenkinsJobs['all'] = $this->getProjects();
         }
 
         return array(
@@ -37,16 +37,21 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/{projectName}/get/information", name="wk_ajax_project_status")
+     * @Route(
+     *     "/{projectName}/get/information/{statusOnly}",
+     *     name="wk_ajax_project_status")
      * @Method({"GET"})
      * @param string $projectName
      * @return JsonResponse
      */
-    public function projectExtendedInformationAction(string $projectName)
+    public function projectExtendedInformationAction(string $projectName, bool $statusOnly = false)
     {
-
         $curler = $this->get('curler');
         $urlToCurl = $this->generateBaseUrl().'job/'.$projectName.'/lastBuild/api/json';
+
+        if($statusOnly) {
+            $urlToCurl .= '?tree=result';
+        }
 
         $lastBuildInfoResult = $curler->curlAUrl($urlToCurl);
         // We add a new key to store all the build information
@@ -54,6 +59,19 @@ class DefaultController extends Controller
         return new JsonResponse($result);
     }
 
+    /**
+     * @Route("/{projectName}/trigger/build", name="wk_ajax_build_project")
+     * Function to trigger build request on Jenkins.
+     * @param string $projectName
+     * @return JsonResponse
+     */
+    public function remoteBuildJobAction(string $projectName){
+        $curler = $this->get('curler');
+        $urlToCurl = $this->generateBaseUrl().'job/'.$projectName.'/build';
+
+        $curler->curlAUrl($urlToCurl);
+        return new JsonResponse("Build triggered...");
+    }
 
     /**
      * Function to compose the base url for the Jenkins' JSON API based in
@@ -119,3 +137,4 @@ class DefaultController extends Controller
     }
 
 }
+

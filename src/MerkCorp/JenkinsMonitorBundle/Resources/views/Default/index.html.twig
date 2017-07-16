@@ -60,7 +60,13 @@
                                                     FAILED
                                                 {% endif %}
                                             </td>
-                                            <td></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button data-project="{{ job.name }}"
+                                                            class="btn btn-xs btn-success build-now">Build now
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                         <tr class="collapse"
                                             id="{{ job_type_key ~ '_' ~job.name|replace({'.': '-'}) }}">
@@ -76,14 +82,48 @@
                 </div>
             </div>
         </div>
+        <!-- Modal -->
+        <div class="modal fade" id="buildModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="row text-center">
+                        <div class="col-lg-12">
+                            <div class="modal-body">
+                                <h2>The build has been started</h2>
+                                <p>Your build is in process, please wait a few moments to check the result</p>
+                                <p>You can update the build information clicking the button.</p>
+                                <button class="btn btn-lg btn-success get-build-status" data-project="">Get build
+                                    status
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-lg-12 alert-container hide">
+                            <div class="alert" style="border-radius: 0"></div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
 
 {% block extrajavascritps %}
     <script type="text/javascript">
+        /**
+         * Created by merkury on 16/07/2017.
+         */
         $(document).ready(function () {
             var rows = $('.project-row');
+            var buildNowButtons = $('.build-now');
+            var projectStatusButton = $('.get-build-status');
+            var buildModal = $('#buildModal');
+            var alertContainer = $('.alert-container');
+
 
             rows.click(function () {
 
@@ -137,6 +177,64 @@
 
             });
 
+            buildNowButtons.click(function (e) {
+                e.stopPropagation();
+                var projectName = $(this).data('project');
+                var url = "{{ path('wk_ajax_build_project', {'projectName': 'foo'}) }}";
+                url = url.replace('foo', projectName);
+
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    contentType: "application/json; charset=utf-8",
+                    success: function () {
+                        $('.get-build-status').data('project', projectName);
+                        buildModal.modal();
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+
+            projectStatusButton.click(function (e) {
+
+                var projectName = $(this).data('project');
+                var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo', 'statusOnly': '1'}) }}";
+                url = url.replace('foo', projectName);
+
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response) {
+                        var alert = buildModal.find('.alert');
+                        switch (response.result) {
+                            case 'SUCCESS':
+                                alert.addClass('alert-success');
+                                break;
+                            case 'UNSTABLE':
+                                alert.addClass('alert-warning');
+                                break;
+                            case 'FAILURE':
+                                alert.addClass('alert-danger');
+                                break;
+                        }
+                        alert.html(projectName + ' build status: ' + response.result)
+                        alertContainer.removeClass('hide');
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+
+            buildModal.on('hidden.bs.modal', function () {
+                $('.get-build-status').removeData('project');
+                alertContainer.addClass('hide');
+                $(this).find('.alert').removeClass('alert-success').removeClass('alert-warning').removeClass('alert-danger');
+                $(this).find('.alert').html('');
+            });
 
         });
 
@@ -182,6 +280,5 @@
             var len = (String(base || 10).length - String(this).length) + 1;
             return len > 0 ? new Array(len).join(chr || '0') + this : this;
         }
-
     </script>
 {% endblock %}
