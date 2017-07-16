@@ -29,9 +29,10 @@
                                 <table class="table table-bordered table-responsive">
                                     <thead>
                                     <tr>
+                                        <td></td>
                                         <td>Site Name</td>
                                         <td>Status</td>
-                                        <td></td>
+                                        <td>Actions</td>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -43,14 +44,14 @@
                                         {% elseif job.color == 'red' %}
                                             {% set statusClass = 'danger' %}
                                         {% endif %}
-                                        <tr data-toggle="collapse" id="{{ job.name }}"
-                                            data-target="#{{ job.name|replace({'.': '-'}) }}"
-                                            data-parent=".project-row"
-                                            class="project-row {{ statusClass }}">
+                                        <tr data-toggle="collapse" id="{{ job_type_key ~ '_' ~ job.name }}"
+                                            data-project="{{ job.name }}"
+                                            data-target="#{{ job_type_key ~ '_' ~ job.name|replace({'.': '-'}) }}"
+                                            class="project-row">
                                             <td style="width: 5%">
                                                 <i class="glyphicon glyphicon-triangle-bottom"></i>
                                             <td>{{ job.name }}</td>
-                                            <td>
+                                            <td class="{{ statusClass }}">
                                                 {% if job.color == 'blue' %}
                                                     SUCCESS
                                                 {% elseif job.color == 'yellow' %}
@@ -61,8 +62,9 @@
                                             </td>
                                             <td></td>
                                         </tr>
-                                        <tr class="collapse" id="{{ job.name|replace({'.': '-'}) }}">
-                                            <td colspan="3">
+                                        <tr class="collapse"
+                                            id="{{ job_type_key ~ '_' ~job.name|replace({'.': '-'}) }}">
+                                            <td colspan="4">
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -80,79 +82,106 @@
 
 {% block extrajavascritps %}
     <script type="text/javascript">
+        $(document).ready(function () {
+            var rows = $('.project-row');
 
-        var rows = $('.project-row');
+            rows.click(function () {
 
+                var projectName = $(this).data('project');
+                var panelId = '#' + $(this).attr('id').replace(/\./g, '-');
+                var clickedPanel = $(panelId);
+                var clickedPanelTd = $(panelId + ' td');
+                var icon = $(this).find("i");
+                icon.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-top');
 
+                var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo'}) }}";
+                url = url.replace('foo', projectName);
 
-
-        rows.click(function () {
-
-
-            var projectName = $(this).attr('id');
-            var panelId = '#' + $(this).attr('id').replace(/\./g, '-');
-            var clickedPanel = $(panelId);
-            var clickedPanelTd = $(panelId+ ' td');
-            var icon = $(this).find("i");
-            icon.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-top');
-
-            var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo'}) }}";
-            url = url.replace('foo', projectName);
-
-
-            $(document).ready(function () {
-                $.ajax({
-                    type: "GET",
-                    url: url,
-                    contentType: "application/json; charset=utf-8",
-                    success: function (response) {
-                        clickedPanelTd.empty();
-                        var changeSet = response.changeSet.items[0];
-                        clickedPanelTd.html(
-                           "<table class='table table-bordered'><tbody>" +
-                               "<tr>" +
-                                   "<td><b>Author</b></td>"+
-                                   "<td>"+changeSet.author.fullName+"</td>"+
-                               "</tr>" +
-                               "<tr>" +
-                                    "<td><b>Date</b></td>"+
-                                    "<td>"+changeSet.date+"</td>"+
-                               "</tr>" +
-                               "<tr>" +
-                                    "<td><b>Commit Id</b></td>"+
-                                    "<td>"+changeSet.commitId+"</td>"+
-                               "</tr>" +
-                               "<tr>" +
-                                    "<td><b>Comment</b></td>"+
-                                    "<td>"+changeSet.comment+"</td>"+
-                               "</tr>" +
-
-
-                           "</tbody></table>"
-                        );
-                    },
-                    error: function (error) {
-                        console.log(error);
-                    }
+                clickedPanel.on("hidden.bs.collapse", function (e) {
+                    icon.removeClass('glyphicon-triangle-top').addClass('glyphicon-triangle-bottom');
+                    clickedPanelTd.empty();
                 });
+
+
+                if (!clickedPanel.hasClass('in')) {
+                    $.ajax({
+                        type: "GET",
+                        url: url,
+                        contentType: "application/json; charset=utf-8",
+                        success: function (response) {
+                            var changeSetHTML = '';
+                            if (response.changeSet.items.length > 0) {
+
+                                var changeSet = response.changeSet.items[0];
+                                var affectedPaths = composeChangeSet(changeSet.affectedPaths);
+                                changeSetHTML = "<table class='table table-bordered'><tbody>" +
+                                    "<tr><td><b>Author</b></td>" +
+                                    "<td>" + changeSet.author.fullName + "</td></tr>" +
+                                    "<tr><td><b>Date</b></td><td>" + formatDate(response.timestamp) + "</td></tr>" +
+                                    "<tr><td><b>Commit Id</b></td><td>" + changeSet.commitId + "</td></tr>" +
+                                    "<tr><td><b>Comment</b></td><td>" + changeSet.comment + "</td></tr>" +
+                                    "<tr><td><b>Affected Files</b></td><td>" + affectedPaths + "</td></tbody></table>";
+                            } else {
+                                changeSetHTML = "<table class='table table-bordered'><tbody><tr><td><h4>No changes in the last build</td></tr></tbody>";
+                            }
+
+                            clickedPanelTd.html(changeSetHTML);
+
+
+                        },
+                        error: function (error) {
+                            console.log(error);
+                        }
+                    });
+                }
 
             });
 
+
         });
 
+        // Function to create the html table contained in the cell assigned for affected files
+        function composeChangeSet(changedFiles) {
 
+            var containerDiv = $('<div>');
+            var scrollableContainer = $('<div>');
+            scrollableContainer.addClass('pre-scrollable').css('height: 250px');
+
+            var changeSetTableHtml = $('<table>');
+            var changeSetTBodyHtml = $('<tbody>');
+            changeSetTableHtml.addClass('table').addClass('table-bordered');
+
+            $.each(changedFiles, function (i, file) {
+                var newRow = $('<tr>');
+                $('<td>').html(file).appendTo(newRow);
+                newRow.appendTo(changeSetTBodyHtml);
+                changeSetTBodyHtml.appendTo(changeSetTableHtml);
+            });
+
+            changeSetTableHtml.appendTo(scrollableContainer);
+            scrollableContainer.appendTo(containerDiv);
+            return containerDiv.html();
+
+        }
+
+        // Function to convert unix timestamp into human readable format.
+        function formatDate(timestamp) {
+            var d = new Date(timestamp),
+                dformat = [(d.getMonth() + 1).padLeft(),
+                        d.getDate().padLeft(),
+                        d.getFullYear()].join('/') + ' ' +
+                    [d.getHours().padLeft(),
+                        d.getMinutes().padLeft(),
+                        d.getSeconds().padLeft()].join(':');
+
+            return dformat;
+        }
+
+        // We use number extension to add leading zeros where needed
+        Number.prototype.padLeft = function (base, chr) {
+            var len = (String(base || 10).length - String(this).length) + 1;
+            return len > 0 ? new Array(len).join(chr || '0') + this : this;
+        }
 
     </script>
-    {# Adding change set.
-    "<tr>" +
-                                   "<td><b>Affected Files</b></td>"+
-                                   "<td>" +
-                                        $.each(changeSet.affectedPaths, function (key, val) {
-                                            "<table class='table table-bordered'>" +
-                                            ("<tr><td>" + val + "</td></tr>") +
-                                            "</table>"
-                                        }) +
-                                   "</td>"+
-                               "</tr>" +
-    #}
 {% endblock %}
