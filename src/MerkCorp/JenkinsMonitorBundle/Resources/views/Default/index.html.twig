@@ -161,6 +161,7 @@
 
                                 var changeSet = response.changeSet.items[0];
                                 var affectedPaths = composeChangeSet(changeSet.affectedPaths);
+                                // TODO replace this with a twig render in thte controller and send the plain HMTL
                                 changeSetHTML = "<table class='table table-bordered'><tbody>" +
                                     "<tr><td><b>Author</b></td>" +
                                     "<td>" + changeSet.author.fullName + "</td></tr>" +
@@ -278,8 +279,8 @@
         // Function to convert unix timestamp into human readable format.
         function formatDate(timestamp) {
             var d = new Date(timestamp),
-                dformat = [(d.getMonth() + 1).padLeft(),
-                        d.getDate().padLeft(),
+                dformat = [ d.getDate().padLeft(),
+                        (d.getMonth() + 1).padLeft(),
                         d.getFullYear()].join('/') + ' ' +
                     [d.getHours().padLeft(),
                         d.getMinutes().padLeft(),
