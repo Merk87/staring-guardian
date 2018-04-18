@@ -48,39 +48,6 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/data-tables", name="integration_action")
-     * @Template()
-     * @return array|\Symfony\Component\HttpFoundation\RedirectResponse
-     */
-
-    public function indexDataTablesAction() {
-        $projectTypes = $this->getParameter('api_type_projects');
-        $jenkinsJobs = array();
-
-        if (!empty($projectTypes)) {
-            foreach ($projectTypes as $projectKey => $projectType) {
-                $jenkinsJobs[$projectKey] = $this->getProjects($projectType);
-                if (array_key_exists('error', $jenkinsJobs[$projectKey]) && $jenkinsJobs[$projectKey]['error'] === true) {
-                    return $this->redirectToRoute('wk_curl_error_page', array(
-                        'errorCode' => $jenkinsJobs[$projectKey]['http_code'],
-                    ));
-                }
-            }
-        } else {
-            $jenkinsJobs['all'] = $this->getProjects();
-            if (array_key_exists('error', $jenkinsJobs['all']) && $jenkinsJobs['all']['error'] === true) {
-                return $this->redirectToRoute('wk_curl_error_page', array(
-                    'errorCode' => $jenkinsJobs['all']['http_code'],
-                ));
-            }
-        }
-
-        return array(
-            'jenkins_jobs' => $jenkinsJobs
-        );
-    }
-
-    /**
      * Error page to handle curl bad responses.
      * @param $errorCode
      * @Route("/curl/error/{errorCode}", name="wk_curl_error_page")

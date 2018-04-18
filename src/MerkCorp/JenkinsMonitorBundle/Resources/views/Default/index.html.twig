@@ -7,7 +7,8 @@
             <div class="col-xs-12">
 
                 <h1>Site Builds Status</h1>
-                <div class="curl-alert alert alert-danger alert-dismissible" role="alert">
+                <div class="curl-alert alert alert-danger alert-dismissible"
+                     role="alert">
                     <span class="error-text"></span>
                 </div>
                 <hr/>
@@ -16,9 +17,11 @@
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs" role="tablist">
                         {% for job_type_key, job_type in jenkins_jobs %}
-                            <li role="presentation" {% if loop.first %} class="active"{% endif %}><a
+                            <li role="presentation" {% if loop.first %} class="active"{% endif %}>
+                                <a
                                         href="#{{ job_type_key }}"
-                                        aria-controls="{{ job_type_key }}" role="tab"
+                                        aria-controls="{{ job_type_key }}"
+                                        role="tab"
                                         data-toggle="tab">{{ job_type_key|unCamelCase|capitalize }}</a>
                             </li>
                         {% endfor %}
@@ -27,9 +30,11 @@
                     <!-- Tab panes -->
                     <div class="tab-content">
                         {% for job_type_key, job_type in jenkins_jobs %}
-                            <div role="tabpanel" class="tab-pane {% if loop.first %}active{% endif %}"
+                            <div role="tabpanel"
+                                 class="tab-pane {% if loop.first %}active{% endif %}"
                                  id="{{ job_type_key }}">
-                                <table id=="{{ job_type_key }}_table" class="table table-bordered table-responsive table-jobs">
+                                <table id="{{ job_type_key }}_table"
+                                       class="table table-bordered table-responsive table-jobs">
                                     <thead>
                                     <tr>
                                         <th></th>
@@ -47,11 +52,12 @@
                                         {% elseif job.color == 'red' %}
                                             {% set statusClass = 'danger' %}
                                         {% endif %}
-                                        <tr data-toggle="collapse" id="{{ job_type_key ~ '_' ~ job.name }}"
+                                        <tr data-toggle="collapse"
+                                            id="{{ job_type_key ~ '_' ~ job.name }}"
                                             data-project="{{ job.name }}"
                                             data-target="#{{ job_type_key ~ '_' ~ job.name|replace({'.': '-'}) }}"
                                             class="project-row">
-                                            <td style="width: 5%">
+                                            <td class="show-more" style="width: 5%">
                                                 <i class="glyphicon glyphicon-triangle-bottom"></i>
                                             <td>{{ job.name }}</td>
                                             <td class="{{ statusClass }}">
@@ -66,14 +72,10 @@
                                             <td>
                                                 <div class="btn-group">
                                                     <button data-project="{{ job.name }}"
-                                                            class="btn btn-xs btn-success build-now">Build now
+                                                            class="btn btn-xs btn-success build-now">
+                                                        Build now
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                        <tr class="collapse"
-                                            id="{{ job_type_key ~ '_' ~job.name|replace({'.': '-'}) }}">
-                                            <td colspan="4">
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -86,16 +88,20 @@
             </div>
         </div>
         <!-- Modal -->
-        <div class="modal fade" id="buildModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal fade" id="buildModal" tabindex="-1" role="dialog"
+             aria-labelledby="myModalLabel">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="row text-center">
                         <div class="col-lg-12">
                             <div class="modal-body">
                                 <h2>The build has been started</h2>
-                                <p>Your build is in process, please wait a few moments to check the result</p>
-                                <p>You can update the build information clicking the button.</p>
-                                <button class="btn btn-lg btn-success get-build-status" data-project="">Get build
+                                <p>Your build is in process, please wait a few
+                                    moments to check the result</p>
+                                <p>You can update the build information clicking
+                                    the button.</p>
+                                <button class="btn btn-lg btn-success get-build-status"
+                                        data-project="">Get build
                                     status
                                 </button>
                             </div>
@@ -106,7 +112,9 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default"
+                                data-dismiss="modal">Close
+                        </button>
                     </div>
                 </div>
             </div>
@@ -131,26 +139,30 @@
 
             curl_alert.hide();
 
-            rows.click(function () {
+            {% for job_type_key, job_type in jenkins_jobs %}
+            var {{ job_type_key ~ "Table" }} = $('{{ "#"~job_type_key ~ "_table" }}');
+            var {{ "dt_" ~ job_type_key ~ "Table" }} = {{ job_type_key ~ "Table" }}.DataTable({
+                "stateSave": true
+            });
 
-                var projectName = $(this).data('project');
-                var panelId = '#' + $(this).attr('id').replace(/\./g, '-');
-                var clickedPanel = $(panelId);
-                var clickedPanelTd = $(panelId + ' td');
-                var icon = $(this).find("i");
-                icon.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-top');
+            {{ job_type_key ~ "Table" }}.on('click', 'td.show-more', function () {
+                var tr = $(this).closest('tr');
+                var row = {{ "dt_" ~ job_type_key ~ "Table" }}.row( tr );
 
-                var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo'}) }}";
-                url = url.replace('foo', projectName);
+                if ( row.child.isShown() ) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
+                }
+                else {
+                    // Open this row
+                    var projectName = tr.data('project');
+                    var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo'}) }}";
+                    url = url.replace('foo', projectName);
 
-                clickedPanel.on("hidden.bs.collapse", function (e) {
-                    icon.removeClass('glyphicon-triangle-top').addClass('glyphicon-triangle-bottom');
-                    clickedPanelTd.empty();
-                });
+                    var icon = $(this).find("i");
+                    icon.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-top');
 
-
-                if (!clickedPanel.hasClass('in')) {
-                    curl_alert.hide();
                     $.ajax({
                         type: "GET",
                         url: url,
@@ -169,12 +181,13 @@
                                     "<tr><td><b>Commit Id</b></td><td>" + changeSet.commitId + "</td></tr>" +
                                     "<tr><td><b>Comment</b></td><td>" + changeSet.comment + "</td></tr>" +
                                     "<tr><td><b>Affected Files</b></td><td>" + affectedPaths + "</td></tbody></table>";
+
                             } else {
                                 changeSetHTML = "<table class='table table-bordered'><tbody><tr><td><h4>No changes in the last build</td></tr></tbody>";
+
+
                             }
-
-                            clickedPanelTd.html(changeSetHTML);
-
+                            row.child(changeSetHTML).show();
                         },
                         error: function (error) {
                             var errorText = curl_alert.find('.error-text');
@@ -182,9 +195,13 @@
                             curl_alert.show();
                         }
                     });
-                }
 
-            });
+
+                    // tr.addClass('shown');
+                }
+            } );
+
+            {% endfor %}
 
             buildNowButtons.click(function (e) {
                 curl_alert.hide();
@@ -252,6 +269,7 @@
 
         });
 
+
         // Function to create the html table contained in the cell assigned for affected files
         function composeChangeSet(changedFiles) {
 
@@ -276,11 +294,12 @@
 
         }
 
+
         // Function to convert unix timestamp into human readable format.
         function formatDate(timestamp) {
             var d = new Date(timestamp),
-                dformat = [ d.getDate().padLeft(),
-                        (d.getMonth() + 1).padLeft(),
+                dformat = [(d.getMonth() + 1).padLeft(),
+                        d.getDate().padLeft(),
                         d.getFullYear()].join('/') + ' ' +
                     [d.getHours().padLeft(),
                         d.getMinutes().padLeft(),
