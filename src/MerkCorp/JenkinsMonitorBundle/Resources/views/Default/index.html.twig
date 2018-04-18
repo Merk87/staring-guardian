@@ -14,8 +14,9 @@
                 <hr/>
 
                 <div>
+                    <div class="col-xs-2">
                     <!-- Nav tabs -->
-                    <ul class="nav nav-tabs" role="tablist">
+                    <ul class="nav nav-pills nav-stacked" role="tablist">
                         {% for job_type_key, job_type in jenkins_jobs %}
                             <li role="presentation" {% if loop.first %} class="active"{% endif %}>
                                 <a
@@ -26,9 +27,10 @@
                             </li>
                         {% endfor %}
                     </ul>
+                    </div>
 
                     <!-- Tab panes -->
-                    <div class="tab-content">
+                    <div class="col-xs-10 tab-content">
                         {% for job_type_key, job_type in jenkins_jobs %}
                             <div role="tabpanel"
                                  class="tab-pane {% if loop.first %}active{% endif %}"
