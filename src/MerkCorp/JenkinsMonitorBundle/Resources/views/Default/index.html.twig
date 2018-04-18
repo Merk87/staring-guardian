@@ -148,11 +148,14 @@
             {{ job_type_key ~ "Table" }}.on('click', 'td.show-more', function () {
                 var tr = $(this).closest('tr');
                 var row = {{ "dt_" ~ job_type_key ~ "Table" }}.row( tr );
+                var icon = $(this).find("i");
 
                 if ( row.child.isShown() ) {
                     // This row is already open - close it
                     row.child.hide();
                     tr.removeClass('shown');
+
+                    icon.removeClass('glyphicon-triangle-top').addClass('glyphicon-triangle-bottom');
                 }
                 else {
                     // Open this row
@@ -160,7 +163,6 @@
                     var url = "{{ path('wk_ajax_project_status', {'projectName': 'foo'}) }}";
                     url = url.replace('foo', projectName);
 
-                    var icon = $(this).find("i");
                     icon.removeClass('glyphicon-triangle-bottom').addClass('glyphicon-triangle-top');
 
                     $.ajax({
