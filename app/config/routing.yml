@@ -3,6 +3,14 @@ merk_corp_jenkins_monitor:
     type:     annotation
     prefix:   /
 
+merk_corp_user:
+    resource: "@MerkCorpUserBundle/Controller/"
+    type:     annotation
+    prefix:   /users
+
 curler:
     resource: "@CurlerBundle/Resources/config/routing.yml"
     prefix:   /
+
+fos_user:
+    resource: "@FOSUserBundle/Resources/config/routing/all.xml"

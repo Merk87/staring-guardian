@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en-us" id="">
+<head>
+    <meta charset="UTF-8"/>
+    <title>{% block title %}Watchkeeper v1.0{% endblock %}</title>
+    {% block stylesheets %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
+    <link rel="stylesheet"
+          href="{{ asset('assets/vendor/bootstrap/dist/css/bootstrap.min.css') }}">
+</head>
+
+<div class="container-fluid">
+
+    <!-- MAIN CONTENT -->
+    <div id="content" class="container">
+        <div class="row">
+            <div style="margin-top:50px;" class="col-xs-12">
+                <h1>Overseer</h1>
+                <p style="font-size:20px;">Welcome to the Jenkins Overseer</p>
+            </div>
+            <div class="col-xs-4 margin-top-20">
+                <div class="form-group"></div>
+                <form class="form"
+                      action="{{ path("fos_user_security_check") }}"
+                      method="post" id="login-form">
+                    <fieldset>
+                        {% if error %}
+                            <div class="alert alert-danger fade in">{{ error|trans({}, 'FOSUserBundle') }}</div>
+                        {% endif %}
+                        <section>
+                            <label for="_username">Username</label>
+                            <input class="form-control" type="text" id="username"
+                                   name="_username"
+                                   value="{{ last_username }}"
+                                   required="required"/>
+                            <b class="tooltip tooltip-top-right"><i
+                                        class="fa fa-user txt-color-teal"></i>
+                                Please enter email
+                                address/username</b></label>
+                            <input type="hidden" name="_csrf_token"
+                                   value="{{ csrf_token }}"/>
+                        </section>
+                        <section>
+                            <label for="_username">Password</label>
+                            <input class="form-control" type="password" id="password"
+                                   name="_password"
+                                   required="required"/>
+                            <b class="tooltip tooltip-top-right"><i
+                                        class="fa fa-lock txt-color-teal"></i>
+                                Enter your password</b> </label>
+                        </section>
+
+                        <section>
+                            <input type="checkbox" id="remember_me"
+                                   name="_remember_me" value="on"/>
+                            <label for="remember_me">Remember me.</label>
+                        </section>
+                    </fieldset>
+                    <footer>
+                        <input class="btn btn-primary" type="submit"
+                               id="_submit" name="_submit" value="Sign in"/>
+                    </footer>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>
