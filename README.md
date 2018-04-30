@@ -27,4 +27,8 @@ Thanks to [http://www.brokenpixel.uk (John James)](http://www.brokenpixel.uk) to
 TODOs
 ======================
 
-* Implementate DataTables with extra information.
+~~* Implementate DataTables with extra information.~~
+* Add user management.
+* Add starred projects view by user.
+* Move API configuration to DB.
+* Bug on status.
