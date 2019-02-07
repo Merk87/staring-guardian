@@ -68,9 +68,10 @@ class DefaultController extends Controller
      *     name="wk_ajax_project_status")
      * @Method({"GET"})
      * @param string $projectName
+     * @param bool $statusOnly
      * @return JsonResponse
      */
-    public function projectExtendedInformationAction(string $projectName, bool $statusOnly = false)
+    public function projectExtendedInformationAction(string $projectName, $statusOnly = false)
     {
         $curler = $this->get('curler');
         $urlToCurl = $this->generateBaseUrl() . 'job/' . $projectName . '/lastBuild/api/json';
