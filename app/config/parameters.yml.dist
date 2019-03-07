@@ -25,3 +25,5 @@ parameters:
     # Create associative array to get projects based in categories. Can be empty
     api_type_projects:
             jobGroupIndex: jobGroupName
+    site_name: 'Watchkeeper'
+    version_string: '1.0'
